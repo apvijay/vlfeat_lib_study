@@ -41,7 +41,7 @@ set(h1,'color','g','LineWidth',2);
 h2 = vl_plotsiftdescriptor(dsc(:,sel), kp(:,sel));
 set(h2,'color','y');
 
-%%
+%% Custom keypoint
 figure(2);
 imshow(img_col);
 
@@ -55,3 +55,34 @@ fprintf('Time taken to determine one descriptor: %.4f seconds\n',time_end);
 % Visualise the custom feature descriptor
 h3 = vl_plotsiftdescriptor(dsc_cust, kp_cust);
 set(h3,'color','y','LineWidth',2);
+
+%% Thresholds
+
+% Ignore features which have abs(DOG) less than peak_thresh
+peak_thresh = [0:1:30];
+num_kp = zeros(1,numel(peak_thresh),'uint16');
+count = 1;
+for thresh = peak_thresh
+    [kp, dsc] = vl_sift(img, 'PeakThresh', thresh);
+    num_kp(count) = size(kp,2);
+    count = count + 1;
+end
+figure(3); hold on;
+plot(peak_thresh, num_kp,'b');
+
+
+% Ignore features which have curvature(DOG) greater than edge_thresh
+% Poorly defined peaks of DOF will have large principal curvature
+edge_thresh = [1:1:30];
+num_kp = zeros(1,numel(edge_thresh),'uint16');
+count = 1;
+for thresh = edge_thresh
+    [kp, dsc] = vl_sift(img, 'EdgeThresh', thresh);
+    num_kp(count) = size(kp,2);
+    count = count + 1;
+end
+plot(edge_thresh, num_kp, 'r');
+title('Number of features vs. Thresholds of DOG');
+xlabel('Threshold value');
+ylabel('Number of features');
+legend('DOG peak threshold', 'DOG edge threshold');
